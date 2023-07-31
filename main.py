@@ -42,10 +42,6 @@ def save():
             "password": password
         }
     }
-    
-    if len(email) > 0:
-        with open("recent_email.txt", "w") as email_file:
-            email_file.write(email)
 
     if len(website) == 0 or len(password) == 0 or len(email) == 0:
         messagebox.showinfo(title="Oops", message="Please fill in all the fields.")
@@ -104,9 +100,12 @@ def open_passwords_file():
 
 
 try:
-    with open("recent_email.txt", "r") as email_text_file:
-        recent_email = email_text_file.readlines()
+    pw_file = read_pw_file()
+    # Get email from most recent entry
+    recent_email = pw_file[list(pw_file.keys())[-1]]["email"]
 except FileNotFoundError:
+    recent_email = ""
+except json.decoder.JSONDecodeError:
     recent_email = ""
 
 window = Tk()
