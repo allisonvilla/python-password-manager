@@ -6,27 +6,6 @@ import os
 import json
 
 
-def generate_password():
-    password_entry.delete(0, END)
-
-    letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-               'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
-               'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
-    numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
-    symbols = ['!', '#', '$', '%', '&', '(', ')', '*', '+']
-
-    password_letters = [choice(letters) for _ in range(randint(8, 10))]
-    password_symbols = [choice(symbols) for _ in range(randint(2, 4))]
-    password_numbers = [choice(numbers) for _ in range(randint(2, 4))]
-
-    password_list = password_letters + password_symbols + password_numbers
-    shuffle(password_list)
-
-    new_password = "".join(password_list)
-    password_entry.insert(0, new_password)
-    pyperclip.copy(new_password)
-
-
 def read_pw_file():
     with open("passwords.json", "r") as data_file:
         return json.load(data_file)
@@ -62,6 +41,8 @@ def save():
                     confirmed_overwrite = messagebox.askokcancel(title=website, message=f"An entry for {website} already exists. Do you want to overwrite it?")
                     if confirmed_overwrite:
                         del current_data[website]
+                    else:
+                        return
 
                 with open("passwords.json", "w") as data_file:
                     current_data.update(new_entry)
@@ -97,6 +78,27 @@ def open_passwords_file():
         os.startfile('passwords.json')
     except FileNotFoundError:
         messagebox.showinfo(title="Oops", message="Save a log-in to generate a passwords file.")
+
+
+def generate_password():
+    password_entry.delete(0, END)
+
+    letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+               'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
+               'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+    numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+    symbols = ['!', '#', '$', '%', '&', '(', ')', '*', '+']
+
+    password_letters = [choice(letters) for _ in range(randint(8, 10))]
+    password_symbols = [choice(symbols) for _ in range(randint(2, 4))]
+    password_numbers = [choice(numbers) for _ in range(randint(2, 4))]
+
+    password_list = password_letters + password_symbols + password_numbers
+    shuffle(password_list)
+
+    new_password = "".join(password_list)
+    password_entry.insert(0, new_password)
+    pyperclip.copy(new_password)
 
 
 try:
