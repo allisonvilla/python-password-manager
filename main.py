@@ -57,16 +57,21 @@ def save():
             current_data = {}
             try:
                 current_data = read_pw_file()
-                current_data.update(new_entry)
             except FileNotFoundError:
-                current_data = new_entry
+                pass
             except json.decoder.JSONDecodeError:
-                current_data = new_entry
+                pass
             finally:
+                if website in current_data:
+                    confirmed_overwrite = messagebox.askokcancel(title=website, message=f"An entry for {website} already exists. Do you want to overwrite it?")
+                    if confirmed_overwrite:
+                        del current_data[website]
+
                 with open("passwords.json", "w") as data_file:
+                    current_data.update(new_entry)
                     json.dump(current_data, data_file, indent=4)
-                    website_entry.delete(0, END)
-                    password_entry.delete(0, END)
+                website_entry.delete(0, END)
+                password_entry.delete(0, END)
 
 
 def find_password():
@@ -83,7 +88,10 @@ def find_password():
             messagebox.showinfo(title="Oops", message="No password data found.")
         else:
             if website in current_data:
-                messagebox.showinfo(title=f"Log-In Details for {website}", message=f'Email: {current_data[website]["email"]} \nPassword: {current_data[website]["password"]}')
+                email_entry.delete(0, END)
+                password_entry.delete(0, END)
+                email_entry.insert(0, current_data[website]["email"])
+                password_entry.insert(0, current_data[website]["password"])
             else:
                 messagebox.showinfo(title="Oops", message=f"No log-in details found for {website}.")
 
@@ -128,7 +136,7 @@ password_entry.grid(row=4, column=1)
 # Buttons
 search_btn = Button(text="Search Current Entries", width=29, command=find_password)
 search_btn.grid(row=2, column=1, pady=(0, 15))
-gen_password_btn = Button(text="Generate Password", width=29, command=generate_password)
+gen_password_btn = Button(text="Generate New Password", width=29, command=generate_password)
 gen_password_btn.grid(row=5, column=1, pady=(0, 30))
 save_btn = Button(text="Save Details", width=29, command=save)
 save_btn.grid(row=6, column=1)
