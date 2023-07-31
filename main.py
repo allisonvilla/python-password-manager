@@ -27,6 +27,11 @@ def generate_password():
     pyperclip.copy(new_password)
 
 
+def read_pw_file():
+    with open("passwords.json", "r") as data_file:
+        return json.load(data_file)
+
+
 def save():
     website = website_entry.get()
     email = email_entry.get()
@@ -51,9 +56,8 @@ def save():
         if confirmed:
             current_data = {}
             try:
-                with open("passwords.json", "r") as data_file:
-                    current_data = json.load(data_file)
-                    current_data.update(new_entry)
+                current_data = read_pw_file()
+                current_data.update(new_entry)
             except FileNotFoundError:
                 current_data = new_entry
             except json.decoder.JSONDecodeError:
@@ -63,6 +67,25 @@ def save():
                     json.dump(current_data, data_file, indent=4)
                     website_entry.delete(0, END)
                     password_entry.delete(0, END)
+
+
+def find_password():
+    website = website_entry.get()
+
+    if len(website) == 0:
+        messagebox.showinfo(title="Oops", message="Please enter a website to search.")
+    else:
+        try:
+            current_data = read_pw_file()
+        except FileNotFoundError:
+            messagebox.showinfo(title="Oops", message="No password data found.")
+        except json.decoder.JSONDecodeError:
+            messagebox.showinfo(title="Oops", message="No password data found.")
+        else:
+            if website in current_data:
+                messagebox.showinfo(title=f"Log-In Details for {website}", message=f'Email: {current_data[website]["email"]} \nPassword: {current_data[website]["password"]}')
+            else:
+                messagebox.showinfo(title="Oops", message=f"No log-in details found for {website}.")
 
 
 def open_passwords_file():
@@ -87,29 +110,29 @@ window.eval('tk::PlaceWindow . center')
 website_label = Label(text="Website")
 website_label.grid(row=1, column=0)
 email_label = Label(text="Email/Username")
-email_label.grid(row=2, column=0)
+email_label.grid(row=3, column=0, pady=(0, 15))
 password_label = Label(text="Password")
-password_label.grid(row=3, column=0)
-
-# TODO: Make classes for inputs and buttons
+password_label.grid(row=4, column=0)
 
 # Inputs
 website_entry = Entry(width=35)
-website_entry.grid(row=1, column=1, columnspan=2)
+website_entry.grid(row=1, column=1)
 website_entry.focus()
 email_entry = Entry(width=35)
-email_entry.grid(row=2, column=1, columnspan=2)
+email_entry.grid(row=3, column=1, pady=(0, 15))
 if recent_email:
     email_entry.insert(0, recent_email)
 password_entry = Entry(width=35)
-password_entry.grid(row=3, column=1, columnspan=2)
+password_entry.grid(row=4, column=1)
 
 # Buttons
+search_btn = Button(text="Search Current Entries", width=29, command=find_password)
+search_btn.grid(row=2, column=1, pady=(0, 15))
 gen_password_btn = Button(text="Generate Password", width=29, command=generate_password)
-gen_password_btn.grid(row=4, column=1, columnspan=2, pady=(0, 20))
+gen_password_btn.grid(row=5, column=1, pady=(0, 30))
 save_btn = Button(text="Save Details", width=29, command=save)
-save_btn.grid(row=5, column=1, columnspan=2)
+save_btn.grid(row=6, column=1)
 open_btn = Button(text="Open Passwords File", width=29, command=open_passwords_file)
-open_btn.grid(row=6, column=1, columnspan=2)
+open_btn.grid(row=7, column=1)
 
 window.mainloop()
