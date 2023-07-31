@@ -47,7 +47,7 @@ def save():
         messagebox.showinfo(title="Oops", message="Please fill in all the fields.")
     else:
         confirmed = messagebox.askokcancel(title=website,
-                                           message=f"Do you want to save the following log-in? \nEmail: {email} \nPassword: {password}")
+                                           message=f"Do you want to save the following log-in for {website}? \nEmail: {email} \nPassword: {password}")
 
         if confirmed:
             current_data = {}
