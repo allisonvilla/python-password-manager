@@ -28,7 +28,7 @@ def save():
         messagebox.showinfo(title="Oops", message="Please fill in all the fields.")
     else:
         confirmed = messagebox.askokcancel(title=website,
-                                           message=f"Do you want to save the following log-in for {website}? \nEmail: {email} \nPassword: {password}")
+                                           message=f"Save a new log-in for {website}? \nEmail: {email} \nPassword: {password}")
 
         if confirmed:
             current_data = {}
@@ -40,7 +40,9 @@ def save():
                 pass
             finally:
                 if website in current_data:
-                    confirmed_overwrite = messagebox.askokcancel(title=website, message=f"An entry for {website} already exists. Do you want to overwrite it?")
+                    confirmed_overwrite = messagebox.askokcancel(
+                        title=website,
+                        message=f"An entry for {website} already exists. Do you want to overwrite it?")
                     if confirmed_overwrite:
                         del current_data[website]
                     else:
@@ -51,6 +53,16 @@ def save():
                     json.dump(current_data, data_file, indent=4)
                 website_entry.delete(0, END)
                 password_entry.delete(0, END)
+
+                # Add new listing to dropdown menu
+                global pw_file_websites, search_dropdown_entry, dropdown_option
+                pw_file_websites = list(current_data.keys())
+                # TODO: fix this mess
+                search_dropdown_entry.grid_forget()
+                dropdown_option.set(DEFAULT_DROPDOWN)
+                search_dropdown_entry = OptionMenu(window, dropdown_option, *pw_file_websites)
+                search_dropdown_entry.grid(row=1, column=1, columnspan=2)
+                search_dropdown_entry.config(width=28)
 
 
 def find_password():
@@ -98,6 +110,9 @@ def open_passwords_file():
     except FileNotFoundError:
         messagebox.showinfo(title="Oops", message="Save a log-in to generate a passwords file.")
 
+    # TODO: Create a backup of the passwords.json when it is opened by the user
+    # TODO: Add a way to delete an entry from GUI
+
 
 def generate_password():
     password_entry.delete(0, END)
@@ -119,7 +134,7 @@ def generate_password():
     password_entry.insert(0, new_password)
 
 
-pw_file_websites = []
+pw_file_websites = ['No log-ins saved yet']
 try:
     pw_file = read_pw_file()
     pw_file_websites = list(pw_file.keys())
@@ -145,7 +160,7 @@ search_dropdown_entry = OptionMenu(window, dropdown_option, *pw_file_websites)
 search_dropdown_entry.grid(row=1, column=1, columnspan=2)
 search_dropdown_entry.config(width=28)
 
-search_bar_entry = Entry(width=35)
+search_bar_entry = Entry(width=34)
 search_bar_entry.grid(row=2, column=1, columnspan=2)
 
 search_btn = Button(text="Get Log-In Details", width=29, command=find_password)
