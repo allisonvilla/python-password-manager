@@ -1,9 +1,11 @@
 from tkinter import *
-from tkinter import messagebox
+from tkinter import messagebox, OptionMenu, StringVar
 from random import choice, randint, shuffle
 import pyperclip
 import os
 import json
+
+DEFAULT_DROPDOWN = "Select An Entry"
 
 
 def read_pw_file():
@@ -52,10 +54,12 @@ def save():
 
 
 def find_password():
-    website = website_entry.get()
+    dropdown_val = dropdown_option.get()
+    search_bar_val = search_bar_entry.get()
+    query = dropdown_val if dropdown_val != DEFAULT_DROPDOWN else search_bar_val
 
-    if len(website) == 0:
-        messagebox.showinfo(title="Oops", message="Please enter a website to search.")
+    if len(query) == 0:
+        messagebox.showinfo(title="Oops", message="Please enter a search query or select an existing entry from the dropdown menu.")
     else:
         try:
             current_data = read_pw_file()
@@ -64,13 +68,18 @@ def find_password():
         except json.decoder.JSONDecodeError:
             messagebox.showinfo(title="Oops", message="No password data found.")
         else:
-            if website in current_data:
+            if query in current_data:
+                website_entry.delete(0, END)
                 email_entry.delete(0, END)
                 password_entry.delete(0, END)
-                email_entry.insert(0, current_data[website]["email"])
-                password_entry.insert(0, current_data[website]["password"])
+                website_entry.insert(0, query)
+                email_entry.insert(0, current_data[query]["email"])
+                password_entry.insert(0, current_data[query]["password"])
             else:
-                messagebox.showinfo(title="Oops", message=f"No log-in details found for {website}.")
+                messagebox.showinfo(title="Oops", message=f"No log-in details found for {query}.")
+    # Reset dropdown menu and search bar
+    dropdown_option.set(DEFAULT_DROPDOWN)
+    search_bar_entry.delete(0, END)
 
 
 def copy_email():
@@ -110,10 +119,12 @@ def generate_password():
     password_entry.insert(0, new_password)
 
 
+pw_file_websites = []
 try:
     pw_file = read_pw_file()
+    pw_file_websites = list(pw_file.keys())
     # Get email from most recent entry
-    recent_email = pw_file[list(pw_file.keys())[-1]]["email"]
+    recent_email = pw_file[pw_file_websites[-1]]["email"]
 except FileNotFoundError:
     recent_email = ""
 except json.decoder.JSONDecodeError:
@@ -124,47 +135,60 @@ window.title("Password Manager")
 window.config(padx=20, pady=20)
 window.eval('tk::PlaceWindow . center')
 
+# Search
+search_label = Label(text="Search")
+search_label.grid(row=1, column=0)
+
+dropdown_option = StringVar()
+dropdown_option.set(DEFAULT_DROPDOWN)
+search_dropdown_entry = OptionMenu(window, dropdown_option, *pw_file_websites)
+search_dropdown_entry.grid(row=1, column=1, columnspan=2)
+search_dropdown_entry.config(width=28)
+
+search_bar_entry = Entry(width=35)
+search_bar_entry.grid(row=2, column=1, columnspan=2)
+
+search_btn = Button(text="Get Log-In Details", width=29, command=find_password)
+search_btn.grid(row=3, column=1, pady=(0, 30), columnspan=2)
+
 # Website
 website_label = Label(text="Website")
-website_label.grid(row=1, column=0)
+website_label.grid(row=4, column=0, pady=(0, 15))
 
 website_entry = Entry(width=35)
-website_entry.grid(row=1, column=1, columnspan=2)
+website_entry.grid(row=4, column=1, pady=(0, 15), columnspan=2)
 website_entry.focus()
-
-search_btn = Button(text="Search Current Entries", width=29, command=find_password)
-search_btn.grid(row=2, column=1, pady=(0, 15), columnspan=2)
 
 # Email
 email_label = Label(text="Email/Username")
-email_label.grid(row=3, column=0, pady=(0, 15))
+email_label.grid(row=5, column=0, pady=(0, 15))
 
 email_entry = Entry(width=27)
-email_entry.grid(row=3, column=1, pady=(0, 15))
+email_entry.grid(row=5, column=1, pady=(0, 15))
 if recent_email:
     email_entry.insert(0, recent_email)
 
 copy_email_btn = Button(text="Copy", width=5, command=copy_email)
-copy_email_btn.grid(row=3, column=2, pady=(0, 15))
+copy_email_btn.grid(row=5, column=2, pady=(0, 15))
 
 # Password
 password_label = Label(text="Password")
-password_label.grid(row=4, column=0)
+password_label.grid(row=6, column=0)
 
 password_entry = Entry(width=27)
-password_entry.grid(row=4, column=1)
+password_entry.grid(row=6, column=1)
 
 copy_pw_btn = Button(text="Copy", width=5, command=copy_password)
-copy_pw_btn.grid(row=4, column=2)
+copy_pw_btn.grid(row=6, column=2)
 
 gen_password_btn = Button(text="Generate New Password", width=29, command=generate_password)
-gen_password_btn.grid(row=5, column=1, pady=(0, 30), columnspan=2)
+gen_password_btn.grid(row=7, column=1, pady=(0, 30), columnspan=2)
 
 # Misc
 save_btn = Button(text="Save Details", width=29, command=save)
-save_btn.grid(row=6, column=1, columnspan=2)
+save_btn.grid(row=8, column=1, columnspan=2)
 
 open_btn = Button(text="Open Passwords File", width=29, command=open_passwords_file)
-open_btn.grid(row=7, column=1, columnspan=2)
+open_btn.grid(row=9, column=1, columnspan=2)
 
 window.mainloop()
